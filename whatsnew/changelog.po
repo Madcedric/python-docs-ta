@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Python 3.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-11 17:33+0000\n"
+"POT-Creation-Date: 2026-06-13 15:28+0000\n"
 "PO-Revision-Date: 2025-09-16 00:02+0000\n"
 "Last-Translator: Hari, 2026\n"
 "Language-Team: Tamil (https://app.transifex.com/python-doc/teams/5390/ta/)\n"
@@ -73,6 +73,14 @@ msgid ""
 msgstr ""
 
 msgid "Library"
+msgstr ""
+
+msgid ""
+":gh:`151126`: Fix crash on unset :exc:`MemoryError` on allocation failure "
+"in :func:`ctypes.get_errno`."
+msgstr ""
+
+msgid ":gh:`151337`: Avoid possible memory leak in ``tkinter.c`` on Windows."
 msgstr ""
 
 msgid ""
@@ -172,6 +180,16 @@ msgid ""
 "`str` instead of :class:`bytes`. Patch by Florian Best."
 msgstr ""
 
+msgid ""
+":gh:`101267`: When a worker process terminates unexpectedly, :class:"
+"`concurrent.futures.ProcessPoolExecutor` now sets a separate :exc:"
+"`~concurrent.futures.process.BrokenProcessPool` exception on each pending "
+"future instead of sharing a single instance among them all. Sharing one "
+"exception produced malformed tracebacks: each :meth:`Future.result() "
+"<concurrent.futures.Future.result>` call re-raised the same object, "
+"appending another copy of the traceback to it."
+msgstr ""
+
 msgid "IDLE"
 msgstr ""
 
@@ -193,6 +211,13 @@ msgid ""
 msgstr ""
 
 msgid "Core and Builtins"
+msgstr ""
+
+msgid ""
+":gh:`151297`: Fix an invalid pointer dereference that could occur when "
+"calling :c:func:`PyObject_Realloc` with a NULL pointer in :term:`free-"
+"threaded builds <free-threaded build>` or with :envvar:`PYTHONMALLOC` set to "
+"``mimalloc``."
 msgstr ""
 
 msgid ""
@@ -218,6 +243,11 @@ msgid ""
 msgstr ""
 
 msgid "Now these places raise proper :exc:`MemoryError` errors."
+msgstr ""
+
+msgid ""
+":gh:`151065`: Fix memory leak when using the :ref:`mimalloc memory allocator "
+"<mimalloc>`."
 msgstr ""
 
 msgid ""
