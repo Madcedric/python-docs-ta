@@ -35,7 +35,9 @@ jobs:
 
       - name: Recreate Transifex Config
         run: |
+          # Download the file to the root
           curl -O https://raw.githubusercontent.com/python-docs-translations/transifex-automations/master/sample-workflows/transifex-util.py
+          # Execute the config generator
           python transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version 3.15
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
@@ -51,6 +53,7 @@ jobs:
 
           echo "Analyzing changes between $BEFORE_SHA and ${{ github.sha }}..."
           
+          # Find files matching the .po extension
           CHANGED_FILES=$(git diff --name-only $BEFORE_SHA ${{ github.sha }} | grep '\.po$' || true)
           
           if [ -z "$CHANGED_FILES" ]; then
@@ -62,11 +65,10 @@ jobs:
             if [ -f "$file" ]; then
               echo "Processing modified file: $file"
               
-              # Extract file component name (e.g., 'bugs')
+              # Extract pure name without path/extension (e.g., 'bugs')
               FILENAME=$(basename "$file" .po)
               
-              # STRICT MATCHING: Grabs the full configuration block mapping that includes 
-              # the explicit resource identifier (:r:) and the trailing version numeric code (--[0-9]*)
+              # Find the exact versioned resource block inside .tx/config
               RESOURCE_ID=$(grep -o "\[.*:r:${FILENAME}--[0-9]*\]" .tx/config | tr -d '[]' | head -n 1 || true)
               
               if [ -z "$RESOURCE_ID" ]; then
@@ -74,9 +76,9 @@ jobs:
                 continue
               fi
               
-              echo "Found matching Transifex Resource ID from config: $RESOURCE_ID"
+              echo "Found matching Transifex Resource ID: $RESOURCE_ID"
               
-              # Execute the targeted, non-destructive sync to Transifex
+              # Force push the update using the explicit translation indicator
               tx push --translation --force --languages ta --resources "$RESOURCE_ID"
             else
               echo "Skipping missing or deleted file: $file"
