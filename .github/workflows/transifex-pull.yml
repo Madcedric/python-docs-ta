@@ -45,25 +45,23 @@ jobs:
           git config --local user.email github-actions@github.com
           git config --local user.name "GitHub Action's update-translation job"
 
-      # 1. SMART METRIC INSPECTION: Protect GitHub work from empty or degraded pulls
-      - name: Protect GitHub translations from empty Transifex overwrites
+      # 1. FAIL-SAFE PROTECTION: Restore any file that Transifex deleted or stripped of content
+      - name: Protect GitHub translations from Transifex overwrites
         run: |
           git diff --name-only | grep '\.po$' | while read file; do
-            if [ -f "$file" ]; then
-              # Export the committed GitHub variant to a temporary path
-              git show HEAD:"$file" > /tmp/github_version.po 2>/dev/null || echo "" > /tmp/github_version.po
-              
-              # Extract and isolate valid translated msgids using standard gettext tooling
-              GITHUB_COUNT=$(msgattrib --translated /tmp/github_version.po 2>/dev/null | grep -c '^msgid' || echo 0)
-              TRANSIFEX_COUNT=$(msgattrib --translated "$file" 2>/dev/null | grep -c '^msgid' || echo 0)
-              
-              echo "Inspecting $file -> GitHub translations count: $GITHUB_COUNT, Transifex count: $TRANSIFEX_COUNT"
-              
-              # If GitHub holds more verified strings, reject the incoming database change
-              if [ "$GITHUB_COUNT" -gt "$TRANSIFEX_COUNT" ]; then
-                echo "CRITICAL WARNING: Transifex payload is missing strings. Reverting file to GitHub baseline."
-                git checkout HEAD -- "$file"
-              fi
+            
+            # Catch file deletions from the delete_obsolete_files step
+            if [ ! -f "$file" ]; then
+              echo "CRITICAL: Transifex deleted $file. Restoring from GitHub baseline!"
+              git checkout HEAD -- "$file"
+              continue
+            fi
+            
+            # Catch string subtractions (lines starting with '-' that had active translations)
+            REMOVED_TRANSLATIONS=$(git diff HEAD -- "$file" | grep '^-msgstr "[^"]' || true)
+            if [ ! -z "$REMOVED_TRANSLATIONS" ]; then
+              echo "CRITICAL: Transifex stripped translations from $file. Restoring from GitHub baseline!"
+              git checkout HEAD -- "$file"
             fi
           done || true
 
