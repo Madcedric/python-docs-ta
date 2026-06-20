@@ -44,6 +44,11 @@ jobs:
         run: |
           git config --local user.email github-actions@github.com
           git config --local user.name "GitHub Action's update-translation job"
+
+      # 1. Restore your GitHub work *before* the check occurs
+      - run: git checkout HEAD -- '**.po' || true
+
+      # 2. Filter files accurately based on what remains changed
       - name: Filter files
         run: |
           ! git diff -I'^"POT-Creation-Date: ' \
@@ -51,12 +56,16 @@ jobs:
                      -I'^# ' -I'^"Last-Translator: ' \
                      --exit-code \
             && echo "SIGNIFICANT_CHANGES=1" >> $GITHUB_ENV || exit 0
-      - run: git checkout HEAD -- '**.po' || true
+            
       - run: git add . ':!transifex-util.py'
-      - run: git commit -m 'Update translation from Transifex'
+      
+      # 3. Safely commit only if there are valid changes remaining
+      - run: git commit -m 'Update translation from Transifex' || echo "No changes to commit"
         if: ${{ env.SIGNIFICANT_CHANGES == '1' }}
+
+      # 4. Push the safe updates back up to GitHub
       - uses: ad-m/github-push-action@master
-        if: env.SIGNIFICANT_CHANGES
+        if: ${{ env.SIGNIFICANT_CHANGES == '1' }}
         with:
           branch: ${{ matrix.version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
