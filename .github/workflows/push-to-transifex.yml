@@ -65,18 +65,32 @@ jobs:
               # Export the target filename to an environment variable for Python to read safely
               export TARGET_FILE=$(basename "$file")
               
-              # UPDATED PARSER: Preserves the version slug component (e.g., outputs 'bugs--315')
-              RESOURCE_ID=$(python3 -c "import os, configparser; c = configparser.ConfigParser(); c.read('.tx/config'); print(''.join([s.split(':r:')[-1] for s in c.sections() if ':r:' in s and any(os.environ['TARGET_FILE'] in v for k, v in c.items(s))][:1]))" || true)
+              # NEW PARSER: Instead of stripping headers, find the exact section name containing the filename mapping
+              # Examples of matches: 'o:python-doc:p:python-newest:r:bugs--315' or 'python-newest.bugs'
+              # It looks directly at the keys/values for a path matching your file name.
+              RAW_RESOURCE=$(python3 -c "import os, configparser; c = configparser.ConfigParser(); c.read('.tx/config'); print(''.join([s for s in c.sections() if any(os.environ['TARGET_FILE'] in v for k, v in c.items(s))][:1]))" || true)
 
-              if [ -z "$RESOURCE_ID" ]; then
+              if [ -z "$RAW_RESOURCE" ]; then
                 echo "Warning: Could not resolve a Transifex resource mapping for $file inside .tx/config"
                 continue
               fi
               
-              echo "Resolved target Transifex Resource ID: python-newest.$RESOURCE_ID"
+              echo "Found matching Transifex configuration section: $RAW_RESOURCE"
               
-              # Push using the verified full identifier structure (e.g., python-newest.bugs--315)
-              tx push --translation --force --languages ta --resources "python-newest.$RESOURCE_ID"
+              # If the section name contains the full organization prefix 'o:...', the tx CLI allows you to use the resource slug at the end.
+              # Let's cleanly normalize it so the Transifex CLI parses it correctly.
+              if [[ "$RAW_RESOURCE" == *"_tx_"* ]] || [[ "$RAW_RESOURCE" == *":r:"* ]]; then
+                 # Extract everything after the last resource indicator ':r:' or split by components
+                 RESOURCE_SLUG=$(echo "$RAW_RESOURCE" | sed 's/.*:r://')
+                 FINAL_RESOURCE="python-newest.$RESOURCE_SLUG"
+              else
+                 FINAL_RESOURCE="$RAW_RESOURCE"
+              fi
+
+              echo "Resolved target Transifex Resource ID: $FINAL_RESOURCE"
+              
+              # Force push using the exact resolved resource ID mapping found in the config file
+              tx push --translation --force --languages ta --resources "$FINAL_RESOURCE"
             else
               echo "Skipping missing or deleted file: $file"
             fi
