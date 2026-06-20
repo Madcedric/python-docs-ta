@@ -30,7 +30,7 @@ msgid ""
 "for stability.  In order to maintain this reputation, the developers would "
 "like to know of any deficiencies you find in Python."
 msgstr ""
-"Python என்பது ஓர் வளர்ச்சியடைந்த நிரலாக்க மொழி ஆகும், இது நிலைதன்மைக்காக ஒரு நற்பெயரை "
+"Python என்பது ஓர் வளர்ச்சியடைந்த நிரலாக்க மொழி ஆகும், இது நிலைதன்மைக்காக ஒரு நல்ல பெயரை "
 "நிலைநாட்டியுள்ளது. இந்த நற்பெயரைத் தக்கவைத்துக் கொள்வதற்காக, Python இல் நீங்கள் காணும் "
 "ஏதேனும் குறைபாடுகளை டெவலப்பர்கள் அறிய விரும்புகிறார்கள்."
 
