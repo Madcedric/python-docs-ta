@@ -45,17 +45,23 @@ jobs:
           git config --local user.email github-actions@github.com
           git config --local user.name "GitHub Action's update-translation job"
 
-      # 1. SMART PROTECTION: Revert Transifex only if it erases GitHub translations
+      # 1. SMART METRIC INSPECTION: Protect GitHub work from empty or degraded pulls
       - name: Protect GitHub translations from empty Transifex overwrites
         run: |
           git diff --name-only | grep '\.po$' | while read file; do
             if [ -f "$file" ]; then
-              # Count filled translations on GitHub (HEAD) vs what Transifex just fetched
-              GITHUB_COUNT=$(git show HEAD:"$file" | grep -c '^msgstr "[^"]' || echo 0)
-              TRANSIFEX_COUNT=$(grep -c '^msgstr "[^"]' "$file" || echo 0)
+              # Export the committed GitHub variant to a temporary path
+              git show HEAD:"$file" > /tmp/github_version.po 2>/dev/null || echo "" > /tmp/github_version.po
               
+              # Extract and isolate valid translated msgids using standard gettext tooling
+              GITHUB_COUNT=$(msgattrib --translated /tmp/github_version.po 2>/dev/null | grep -c '^msgid' || echo 0)
+              TRANSIFEX_COUNT=$(msgattrib --translated "$file" 2>/dev/null | grep -c '^msgid' || echo 0)
+              
+              echo "Inspecting $file -> GitHub translations count: $GITHUB_COUNT, Transifex count: $TRANSIFEX_COUNT"
+              
+              # If GitHub holds more verified strings, reject the incoming database change
               if [ "$GITHUB_COUNT" -gt "$TRANSIFEX_COUNT" ]; then
-                echo "Warning: Transifex version of $file has fewer translations ($TRANSIFEX_COUNT) than GitHub ($GITHUB_COUNT). Restoring GitHub work."
+                echo "CRITICAL WARNING: Transifex payload is missing strings. Reverting file to GitHub baseline."
                 git checkout HEAD -- "$file"
               fi
             fi
