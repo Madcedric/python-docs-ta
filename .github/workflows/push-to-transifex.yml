@@ -62,12 +62,9 @@ jobs:
             if [ -f "$file" ]; then
               echo "Processing modified file: $file"
               
-              # Export the target filename to an environment variable for Python to read safely
               export TARGET_FILE=$(basename "$file")
               
-              # NEW PARSER: Instead of stripping headers, find the exact section name containing the filename mapping
-              # Examples of matches: 'o:python-doc:p:python-newest:r:bugs--315' or 'python-newest.bugs'
-              # It looks directly at the keys/values for a path matching your file name.
+              # Extract the clean section identifier directly matching the filename string mapping
               RAW_RESOURCE=$(python3 -c "import os, configparser; c = configparser.ConfigParser(); c.read('.tx/config'); print(''.join([s for s in c.sections() if any(os.environ['TARGET_FILE'] in v for k, v in c.items(s))][:1]))" || true)
 
               if [ -z "$RAW_RESOURCE" ]; then
@@ -75,12 +72,7 @@ jobs:
                 continue
               fi
               
-              echo "Found matching Transifex configuration section: $RAW_RESOURCE"
-              
-              # If the section name contains the full organization prefix 'o:...', the tx CLI allows you to use the resource slug at the end.
-              # Let's cleanly normalize it so the Transifex CLI parses it correctly.
-              if [[ "$RAW_RESOURCE" == *"_tx_"* ]] || [[ "$RAW_RESOURCE" == *":r:"* ]]; then
-                 # Extract everything after the last resource indicator ':r:' or split by components
+              if [[ "$RAW_RESOURCE" == *":r:"* ]]; then
                  RESOURCE_SLUG=$(echo "$RAW_RESOURCE" | sed 's/.*:r://')
                  FINAL_RESOURCE="python-newest.$RESOURCE_SLUG"
               else
@@ -89,7 +81,7 @@ jobs:
 
               echo "Resolved target Transifex Resource ID: $FINAL_RESOURCE"
               
-              # Force push using the exact resolved resource ID mapping found in the config file
+              # Force push the specified language translations for this exact resource identifier
               tx push --translation --force --languages ta --resources "$FINAL_RESOURCE"
             else
               echo "Skipping missing or deleted file: $file"
