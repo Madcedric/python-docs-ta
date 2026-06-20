@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - '3.15'
-    # Only trigger if a Tamil translation file (.po) is changed on GitHub
     paths:
       - '**/*.po'
   workflow_dispatch:
@@ -22,14 +21,20 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install transifex-python
+          # Install system level dependencies required by CPython Doc build tools
+          sudo apt-get install -y gettext
+          
+          # Install Python libraries needed by transifex-util.py
+          pip install requests cogapp polib transifex-python sphinx-intl blurb six
+          
+          # Install the Transifex CLI
           curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
           sudo mv tx /usr/local/bin/
 
-      # CRITICAL: We need a fetch-depth of 2 to compare the current commit with the previous one
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Fetch the entire history so Git has access to both commits during the diff comparison
+          fetch-depth: 0
 
       - name: Recreate Transifex Config
         run: |
@@ -42,19 +47,22 @@ jobs:
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
         run: |
-          echo "Finding modified .po files..."
+          echo "Analyzing changes between ${{ github.event.before }} and ${{ github.sha }}..."
           
-          # Get the list of all added or modified .po files in the latest commit
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '\.po$' || true)
+          # Pinpoint exactly what translation files changed in this push event
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.po$' || true)
           
           if [ -z "$CHANGED_FILES" ]; then
-            echo "No translation (.po) files were changed in this commit."
+            echo "No .po files were modified in this push."
             exit 0
           fi
 
           for file in $CHANGED_FILES; do
-            echo "Processing altered file: $file"
-            
-            # Use tx push on the specific file only, without --force
-            tx push --translations --languages ta --file "$file"
+            # Double check that the file actually exists on disk (handles cases where a file might have been deleted)
+            if [ -f "$file" ]; then
+              echo "Uploading updated file: $file"
+              tx push --translations --languages ta --file "$file"
+            else
+              echo "Skipping file (deleted or missing): $file"
+            fi
           done
