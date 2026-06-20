@@ -5,7 +5,8 @@ on:
     branches:
       - '3.15'
     paths:
-      - '**/*.po'
+      - '**.po'
+      - '**/LC_MESSAGES/*.po'
   workflow_dispatch:
 
 permissions:
@@ -14,6 +15,8 @@ permissions:
 jobs:
   push-to-tx:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -21,19 +24,13 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          # Install system level dependencies required by CPython Doc build tools
           sudo apt-get install -y gettext
-          
-          # Install Python libraries needed by transifex-util.py
           pip install requests cogapp polib transifex-python sphinx-intl blurb six
-          
-          # Install the Transifex CLI
           curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
           sudo mv tx /usr/local/bin/
 
       - uses: actions/checkout@v4
         with:
-          # Fetch the entire history so Git has access to both commits during the diff comparison
           fetch-depth: 0
 
       - name: Recreate Transifex Config
@@ -47,22 +44,37 @@ jobs:
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
         run: |
-          echo "Analyzing changes between ${{ github.event.before }} and ${{ github.sha }}..."
+          BEFORE_SHA="${{ github.event.before }}"
+          if [ -z "$BEFORE_SHA" ] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE_SHA="HEAD~1"
+          fi
+
+          echo "Analyzing changes between $BEFORE_SHA and ${{ github.sha }}..."
           
-          # Pinpoint exactly what translation files changed in this push event
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.po$' || true)
+          CHANGED_FILES=$(git diff --name-only $BEFORE_SHA ${{ github.sha }} | grep '\.po$' || true)
           
           if [ -z "$CHANGED_FILES" ]; then
-            echo "No .po files were modified in this push."
+            echo "No translation (.po) files were changed in this push."
             exit 0
           fi
 
           for file in $CHANGED_FILES; do
-            # Double check that the file actually exists on disk (handles cases where a file might have been deleted)
             if [ -f "$file" ]; then
-              echo "Uploading updated file: $file"
-              tx push --translation --languages ta --file "$file"
+              echo "Processing modified file: $file"
+              
+              # Extract the resource name (e.g., 'bugs.po' or 'library/functions.po' -> 'bugs' or 'functions')
+              FILENAME=$(basename "$file" .po)
+              
+              # Strip periods from version string to match Transifex resource structure (3.15 -> 315)
+              CLEAN_VER=$(echo "3.15" | tr -d '.')
+              
+              # Construct the exact Transifex resource slug
+              RESOURCE_ID="python-newest.${FILENAME}--${CLEAN_VER}"
+              echo "Targeting Transifex Resource ID: $RESOURCE_ID"
+              
+              # Push the specific translation file via its mapped Resource ID
+              tx push --translation --languages ta --resources "$RESOURCE_ID"
             else
-              echo "Skipping file (deleted or missing): $file"
+              echo "Skipping missing or deleted file: $file"
             fi
           done
