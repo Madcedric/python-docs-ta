@@ -45,8 +45,14 @@ jobs:
           git config --local user.email github-actions@github.com
           git config --local user.name "GitHub Action's update-translation job"
 
-      # 1. Restore your GitHub work *before* the check occurs
-      - run: git checkout HEAD -- '**.po' || true
+     # Only restore files that were actually modified locally on GitHub before the run
+      - name: Protect uncommitted GitHub translations
+        run: |
+          git diff --name-only HEAD | while read file; do
+            if [[ "$file" == *.po ]] && [ -f "$file" ]; then
+              git checkout HEAD -- "$file"
+            fi
+          done || true
 
       # 2. Filter files accurately based on what remains changed
       - name: Filter files
