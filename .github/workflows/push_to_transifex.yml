@@ -1,0 +1,60 @@
+name: Push Specific Translation to Transifex
+
+on:
+  push:
+    branches:
+      - '3.15'
+    # Only trigger if a Tamil translation file (.po) is changed on GitHub
+    paths:
+      - '**/*.po'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  push-to-tx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3
+
+      - name: Install Dependencies
+        run: |
+          pip install transifex-python
+          curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
+          sudo mv tx /usr/local/bin/
+
+      # CRITICAL: We need a fetch-depth of 2 to compare the current commit with the previous one
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Recreate Transifex Config
+        run: |
+          curl -O https://raw.githubusercontent.com/python-docs-translations/transifex-automations/master/sample-workflows/transifex-util.py
+          python transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version 3.15
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
+
+      - name: Identify and Push Changed Files
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
+        run: |
+          echo "Finding modified .po files..."
+          
+          # Get the list of all added or modified .po files in the latest commit
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '\.po$' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No translation (.po) files were changed in this commit."
+            exit 0
+          fi
+
+          for file in $CHANGED_FILES; do
+            echo "Processing altered file: $file"
+            
+            # Use tx push on the specific file only, without --force
+            tx push --translations --languages ta --file "$file"
+          done
