@@ -61,7 +61,7 @@ jobs:
             # Double check that the file actually exists on disk (handles cases where a file might have been deleted)
             if [ -f "$file" ]; then
               echo "Uploading updated file: $file"
-              tx push --translations --languages ta --file "$file"
+              tx push --translation --languages ta --file "$file"
             else
               echo "Skipping file (deleted or missing): $file"
             fi
