@@ -62,20 +62,21 @@ jobs:
             if [ -f "$file" ]; then
               echo "Processing modified file: $file"
               
-              # Extract the filename component without folder or extension
+              # Extract file component name (e.g., 'bugs')
               FILENAME=$(basename "$file" .po)
               
-              # Parse the exact resource configuration block name from the generated .tx/config
-              RESOURCE_ID=$(grep -o "\[.*$FILENAME.*\]" .tx/config | tr -d '[]' | head -n 1 || true)
+              # STRICT MATCHING: Grabs the full configuration block mapping that includes 
+              # the explicit resource identifier (:r:) and the trailing version numeric code (--[0-9]*)
+              RESOURCE_ID=$(grep -o "\[.*:r:${FILENAME}--[0-9]*\]" .tx/config | tr -d '[]' | head -n 1 || true)
               
               if [ -z "$RESOURCE_ID" ]; then
-                echo "Warning: Could not find a matching Transifex resource for $file in .tx/config"
+                echo "Warning: Could not find a matching versioned Transifex resource for $file in .tx/config"
                 continue
               fi
               
               echo "Found matching Transifex Resource ID from config: $RESOURCE_ID"
               
-              # Push the single translation resource cleanly
+              # Execute the targeted, non-destructive sync to Transifex
               tx push --translation --languages ta --resources "$RESOURCE_ID"
             else
               echo "Skipping missing or deleted file: $file"
