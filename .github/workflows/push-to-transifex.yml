@@ -62,23 +62,11 @@ jobs:
             if [ -f "$file" ]; then
               echo "Processing modified file: $file"
               
-              # Extract the absolute base filename (e.g., 'bugs.po')
-              BASE_FILENAME=$(basename "$file")
+              # Export the target filename to an environment variable for Python to read safely
+              export TARGET_FILE=$(basename "$file")
               
-              # Robust Python parsing to read .tx/config and look for the matching file path string mapping
-              RESOURCE_ID=$(python3 -c "
-import configparser
-config = configparser.ConfigParser()
-config.read('.tx/config')
-found = ''
-for section in config.sections():
-    for key, val in config.items(section):
-        if '$BASE_FILENAME' in val:
-            found = section
-            break
-if found:
-    print(found.replace('o:python-doc:p:python-newest:r:', ''))
-" || true)
+              # Single-line inline execution using environment variables to protect syntax
+              RESOURCE_ID=$(python3 -c "import os, configparser; c = configparser.ConfigParser(); c.read('.tx/config'); print(''.join([s.split(':r:')[-1] for s in c.sections() if s.startswith('o:python-doc:p:python-newest:r:') and any(os.environ['TARGET_FILE'] in v for k, v in c.items(s))][:1]))" || true)
 
               if [ -z "$RESOURCE_ID" ]; then
                 echo "Warning: Could not resolve a Transifex resource mapping for $file inside .tx/config"
@@ -87,7 +75,7 @@ if found:
               
               echo "Resolved target Transifex Resource: $RESOURCE_ID"
               
-              # Push using the clean, explicitly resolved resource name structure
+              # Push the single resource forcefully
               tx push --translation --force --languages ta --resources "python-newest.$RESOURCE_ID"
             else
               echo "Skipping missing or deleted file: $file"
