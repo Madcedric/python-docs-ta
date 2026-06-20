@@ -77,7 +77,7 @@ jobs:
               echo "Found matching Transifex Resource ID from config: $RESOURCE_ID"
               
               # Execute the targeted, non-destructive sync to Transifex
-              tx push --translation --languages ta --resources "$RESOURCE_ID"
+              tx push --translation --force --languages ta --resources "$RESOURCE_ID"
             else
               echo "Skipping missing or deleted file: $file"
             fi
