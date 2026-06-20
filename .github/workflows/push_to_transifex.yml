@@ -62,17 +62,20 @@ jobs:
             if [ -f "$file" ]; then
               echo "Processing modified file: $file"
               
-              # Extract the resource name (e.g., 'bugs.po' or 'library/functions.po' -> 'bugs' or 'functions')
+              # Extract the filename component without folder or extension
               FILENAME=$(basename "$file" .po)
               
-              # Strip periods from version string to match Transifex resource structure (3.15 -> 315)
-              CLEAN_VER=$(echo "3.15" | tr -d '.')
+              # Parse the exact resource configuration block name from the generated .tx/config
+              RESOURCE_ID=$(grep -o "\[.*$FILENAME.*\]" .tx/config | tr -d '[]' | head -n 1 || true)
               
-              # Construct the exact Transifex resource slug
-              RESOURCE_ID="python-newest.${FILENAME}--${CLEAN_VER}"
-              echo "Targeting Transifex Resource ID: $RESOURCE_ID"
+              if [ -z "$RESOURCE_ID" ]; then
+                echo "Warning: Could not find a matching Transifex resource for $file in .tx/config"
+                continue
+              fi
               
-              # Push the specific translation file via its mapped Resource ID
+              echo "Found matching Transifex Resource ID from config: $RESOURCE_ID"
+              
+              # Push the single translation resource cleanly
               tx push --translation --languages ta --resources "$RESOURCE_ID"
             else
               echo "Skipping missing or deleted file: $file"
