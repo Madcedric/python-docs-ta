@@ -45,12 +45,19 @@ jobs:
           git config --local user.email github-actions@github.com
           git config --local user.name "GitHub Action's update-translation job"
 
-     # Only restore files that were actually modified locally on GitHub before the run
-      - name: Protect uncommitted GitHub translations
+      # 1. SMART PROTECTION: Revert Transifex only if it erases GitHub translations
+      - name: Protect GitHub translations from empty Transifex overwrites
         run: |
-          git diff --name-only HEAD | while read file; do
-            if [[ "$file" == *.po ]] && [ -f "$file" ]; then
-              git checkout HEAD -- "$file"
+          git diff --name-only | grep '\.po$' | while read file; do
+            if [ -f "$file" ]; then
+              # Count filled translations on GitHub (HEAD) vs what Transifex just fetched
+              GITHUB_COUNT=$(git show HEAD:"$file" | grep -c '^msgstr "[^"]' || echo 0)
+              TRANSIFEX_COUNT=$(grep -c '^msgstr "[^"]' "$file" || echo 0)
+              
+              if [ "$GITHUB_COUNT" -gt "$TRANSIFEX_COUNT" ]; then
+                echo "Warning: Transifex version of $file has fewer translations ($TRANSIFEX_COUNT) than GitHub ($GITHUB_COUNT). Restoring GitHub work."
+                git checkout HEAD -- "$file"
+              fi
             fi
           done || true
 
