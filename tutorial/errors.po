@@ -18,13 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Errors and Exceptions"
-msgstr ""
+msgstr "பிழைகள் மற்றும் விதிவிலக்குகள்"
 
 msgid ""
 "Until now error messages haven't been more than mentioned, but if you have "
 "tried out the examples you have probably seen some.  There are (at least) "
 "two distinguishable kinds of errors: *syntax errors* and *exceptions*."
-msgstr ""
+msgstr "இதுவரை பிழைச் செய்திகள் குறிப்பிடப்பட்டதைத் தவிர வேறில்லை, ஆனால்"
+"நீங்கள் உதாரணங்களை முயற்சித்துப் பார்த்திருந்தால் சிலவற்றைப் பார்த்திருக்கலாம்."
+"குறைந்தது இரண்டு வகையான பிழைகள் உள்ளன: தொடரியல் பிழைகள் (syntax errors) மற்றும் விதிவிலக்குகள் (exceptions)."
 
 msgid "Syntax Errors"
 msgstr ""
