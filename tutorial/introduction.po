@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "An Informal Introduction to Python"
-msgstr ""
+msgstr "பைத்தானுக்கு ஒரு எளிய அறிமுகம்"
 
 msgid ""
 "In the following examples, input and output are distinguished by the "
@@ -46,7 +46,7 @@ msgid ""
 msgstr ""
 
 msgid "Some examples::"
-msgstr ""
+msgstr "சில எடுத்துக்காட்டுகள்::"
 
 msgid ""
 "# this is the first comment\n"
@@ -56,7 +56,7 @@ msgid ""
 msgstr ""
 
 msgid "Using Python as a Calculator"
-msgstr ""
+msgstr "பைத்தானை ஒரு கணிப்பானாகப் பயன்படுத்துதல்"
 
 msgid ""
 "Let's try some simple Python commands.  Start the interpreter and wait for "
@@ -64,7 +64,7 @@ msgid ""
 msgstr ""
 
 msgid "Numbers"
-msgstr ""
+msgstr "எண்கள்"
 
 msgid ""
 "The interpreter acts as a simple calculator: you can type an expression into "
@@ -153,6 +153,8 @@ msgid ""
 ">>> 4 * 3.75 - 1\n"
 "14.0"
 msgstr ""
+">>> 4 * 3.75 - 1\n"
+"14.0"
 
 msgid ""
 "In interactive mode, the last printed expression is assigned to the variable "
@@ -186,7 +188,7 @@ msgid ""
 msgstr ""
 
 msgid "Text"
-msgstr ""
+msgstr "உரை"
 
 msgid ""
 "Python can manipulate text (represented by type :class:`str`, so-called "
@@ -305,6 +307,7 @@ msgstr ""
 msgid ""
 "This feature is particularly useful when you want to break long strings::"
 msgstr ""
+"நீண்ட string-களைப் பிரிக்க விரும்பும் போது இந்த அம்சம் மிகவும் பயனுள்ளதாக இருக்கும்::"
 
 msgid ""
 ">>> text = ('Put several strings within parentheses '\n"
@@ -316,6 +319,7 @@ msgstr ""
 msgid ""
 "This only works with two literals though, not with variables or expressions::"
 msgstr ""
+"இருப்பினும், இது இரண்டு literal-களுடன் மட்டுமே செயல்படும்; variable-கள் மற்றும் expression-களுடன் செயல்படாது::"
 
 msgid ""
 ">>> prefix = 'Py'\n"
@@ -334,6 +338,8 @@ msgstr ""
 msgid ""
 "If you want to concatenate variables or a variable and a literal, use ``+``::"
 msgstr ""
+"variable-களை அல்லது ஒரு variable மற்றும் ஒரு literal-ஐ ஒன்றிணைக்க விரும்பினால், ``+``-ஐ பயன்படுத்தவும்::
+"
 
 msgid ""
 ">>> prefix + 'thon'\n"
@@ -368,7 +374,8 @@ msgid ""
 msgstr ""
 
 msgid "Note that since -0 is the same as 0, negative indices start from -1."
-msgstr ""
+msgstr "-0 என்பது 0-க்குச் சமமானது என்பதால், எதிர்மறை index-கள் -1-லிருந்து தொடங்குகின்றன என்பதை கவனத்தில் கொள்ளவும்.
+"
 
 msgid ""
 "In addition to indexing, *slicing* is also supported.  While indexing is "
@@ -438,7 +445,7 @@ msgid ""
 msgstr ""
 
 msgid "Attempting to use an index that is too large will result in an error::"
-msgstr ""
+msgstr "மிகப் பெரிய index-ஐப் பயன்படுத்த முயற்சித்தால், அது ஒரு error-ஐ ஏற்படுத்தும்::"
 
 msgid ""
 ">>> word[42]  # the word only has 6 characters\n"
@@ -476,7 +483,8 @@ msgid ""
 msgstr ""
 
 msgid "If you need a different string, you should create a new one::"
-msgstr ""
+msgstr "உங்களுக்கு வேறுபட்ட string தேவைப்பட்டால், நீங்கள் ஒரு புதிய string-ஐ உருவாக்க வேண்டும்::
+"
 
 msgid ""
 ">>> 'J' + word[1:]\n"
@@ -486,7 +494,7 @@ msgid ""
 msgstr ""
 
 msgid "The built-in function :func:`len` returns the length of a string::"
-msgstr ""
+msgstr "built-in function len() ஒரு string-இன் நீளத்தைத் திருப்பி வழங்குகிறது::"
 
 msgid ""
 ">>> s = 'supercalifragilisticexpialidocious'\n"
@@ -495,7 +503,7 @@ msgid ""
 msgstr ""
 
 msgid ":ref:`textseq`"
-msgstr ""
+msgstr "ref:`textseq`"
 
 msgid ""
 "Strings are examples of *sequence types*, and support the common operations "
@@ -503,7 +511,7 @@ msgid ""
 msgstr ""
 
 msgid ":ref:`string-methods`"
-msgstr ""
+msgstr ":ref:`string-methods"
 
 msgid ""
 "Strings support a large number of methods for basic transformations and "
@@ -511,16 +519,16 @@ msgid ""
 msgstr ""
 
 msgid ":ref:`f-strings`"
-msgstr ""
+msgstr ":ref:`f-strings`"
 
 msgid "String literals that have embedded expressions."
-msgstr ""
+msgstr "embedded expression-களைக் கொண்ட string literal-கள்."
 
 msgid ":ref:`formatstrings`"
-msgstr ""
+msgstr ":ref:`formatstrings`"
 
 msgid "Information about string formatting with :meth:`str.format`."
-msgstr ""
+msgstr ":meth:`str.format`-ஐப் பயன்படுத்தி string formatting பற்றிய தகவல்கள்."
 
 msgid ":ref:`old-string-formatting`"
 msgstr ""
@@ -531,7 +539,7 @@ msgid ""
 msgstr ""
 
 msgid "Lists"
-msgstr ""
+msgstr "Lists"
 
 msgid ""
 "Python knows a number of *compound* data types, used to group together other "
@@ -561,7 +569,7 @@ msgid ""
 msgstr ""
 
 msgid "Lists also support operations like concatenation::"
-msgstr ""
+msgstr "List-களும் concatenation போன்ற செயல்பாடுகளை ஆதரிக்கின்றன::"
 
 msgid ""
 ">>> squares + [36, 49, 64, 81, 100]\n"
@@ -650,7 +658,7 @@ msgid ""
 msgstr ""
 
 msgid "The built-in function :func:`len` also applies to lists::"
-msgstr ""
+msgstr "built-in function len() list-களுக்கும் பொருந்தும்::"
 
 msgid ""
 ">>> letters = ['a', 'b', 'c', 'd']\n"
@@ -676,7 +684,7 @@ msgid ""
 msgstr ""
 
 msgid "First Steps Towards Programming"
-msgstr ""
+msgstr "Programming-ஐ நோக்கிய முதல் படி"
 
 msgid ""
 "Of course, we can use Python for more complicated tasks than adding two and "
@@ -703,7 +711,7 @@ msgid ""
 msgstr ""
 
 msgid "This example introduces several new features."
-msgstr ""
+msgstr "இந்த எடுத்துக்காட்டு பல புதிய அம்சங்களை அறிமுகப்படுத்துகிறது."
 
 msgid ""
 "The first line contains a *multiple assignment*: the variables ``a`` and "
@@ -765,7 +773,7 @@ msgid ""
 msgstr ""
 
 msgid "Footnotes"
-msgstr ""
+msgstr "Footnotes"
 
 msgid ""
 "Since ``**`` has higher precedence than ``-``, ``-3**2`` will be interpreted "
@@ -781,7 +789,7 @@ msgid ""
 msgstr ""
 
 msgid "# (hash)"
-msgstr ""
+msgstr "# (hash)"
 
 msgid "comment"
-msgstr ""
+msgstr "comment"
