@@ -3,13 +3,17 @@
 # This file is distributed under the same license as the Python package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+# Translators:
+# Hari, 2026
+#
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Python 3.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-02 00:16+0000\n"
+"POT-Creation-Date: 2026-06-19 16:29+0000\n"
 "PO-Revision-Date: 2025-09-16 00:00+0000\n"
+"Last-Translator: Hari, 2026\n"
 "Language-Team: Tamil (https://app.transifex.com/python-doc/teams/5390/ta/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,7 +22,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Glossary"
-msgstr ""
+msgstr "சொற்களஞ்சியம்"
 
 msgid "``>>>``"
 msgstr ""
@@ -27,12 +31,15 @@ msgid ""
 "The default Python prompt of the :term:`interactive` shell.  Often seen for "
 "code examples which can be executed interactively in the interpreter."
 msgstr ""
+":term:`interactive` shell-இன் இயல்புநிலை Python prompt. interpreter-இல் "
+"interactively-ஆக இயக்கிப் பார்க்கக்கூடிய code example-களில் இது பெரும்பாலும் "
+"காணப்படும்."
 
 msgid "``...``"
 msgstr ""
 
 msgid "Can refer to:"
-msgstr ""
+msgstr "இவற்றைக் குறிக்கலாம்:"
 
 msgid ""
 "The default Python prompt of the :term:`interactive` shell when entering the "
@@ -40,6 +47,10 @@ msgid ""
 "right delimiters (parentheses, square brackets, curly braces or triple "
 "quotes), or after specifying a decorator."
 msgstr ""
+":term:`interactive` shell-இன் இயல்புநிலை Python prompt, இது ஒரு indented code "
+"block-க்கான குறியீட்டை உள்ளிடும்போதோ, பொருந்தக்கூடிய left மற்றும் right delimiter-"
+"களுக்குள் (parentheses, square brackets, curly braces அல்லது triple quotes) "
+"இருக்கும்போதோ, அல்லது ஒரு decorator-ஐக் குறிப்பிட்ட பிறகோ தோன்றும்."
 
 msgid ""
 "The three dots form of the :ref:`Ellipsis <bltin-ellipsis-object>` object."
