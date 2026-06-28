@@ -374,8 +374,7 @@ msgid ""
 msgstr ""
 
 msgid "Note that since -0 is the same as 0, negative indices start from -1."
-msgstr "-0 என்பது 0-க்குச் சமமானது என்பதால், எதிர்மறை index-கள் -1-லிருந்து தொடங்குகின்றன என்பதை கவனத்தில் கொள்ளவும்.
-"
+msgstr "-0 என்பது 0-க்குச் சமமானது என்பதால், எதிர்மறை index-கள் -1-லிருந்து தொடங்குகின்றன என்பதை கவனத்தில் கொள்ளவும்."
 
 msgid ""
 "In addition to indexing, *slicing* is also supported.  While indexing is "
