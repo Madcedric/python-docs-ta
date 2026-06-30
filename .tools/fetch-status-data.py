@@ -74,7 +74,7 @@ IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 # 2. Fetch the current time explicitly localized to IST
 timestamp = datetime.datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
 
-timestamp-utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+timestamp_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     
     # Construct markdown table component strings
     dashboard_template = f"""
@@ -87,7 +87,7 @@ timestamp-utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d 
 
 * 🔄 **Dashboard Synchronization Loop:** Automated via GitHub Actions
 * 📅 **Data Verification Timestamp IST:** `{timestamp}`
-* 📅 **Data Verification Timestamp UTC:** `{timestamp-utc}`
+* 📅 **Data Verification Timestamp UTC:** `{timestamp_utc}`
 
 ![Tamil Documentation Progress Visual](.tools/live_graph.png)
 """
