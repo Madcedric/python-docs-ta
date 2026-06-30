@@ -67,15 +67,15 @@ def render_status_graph(core, overall):
     plt.close()
 
 def inject_into_readme(core, overall):
-    """Replaces content between comment blocks inside the repository README."""
+    """Replaces content between comment blocks inside the repository README without stacking whitespace."""
     # Define the IST timezone offset (+5 hours, 30 minutes)
     IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 
-    # Fetch the current time explicitly localized to IST and UTC
+    # Fetch current times
     timestamp = datetime.datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
     timestamp_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     
-    # Construct markdown table component strings
+    # Stripping edge lines from the multiline template protects against infinite vertical layout expansion
     dashboard_template = f"""
 ### 📊 Live Python Translation Metrics (`#ta`)
 
@@ -89,14 +89,14 @@ def inject_into_readme(core, overall):
 * 📅 **Data Verification Timestamp UTC:** `{timestamp_utc}`
 
 ![Tamil Documentation Progress Visual](.tools/live_graph.png)
-"""
+""".strip()
 
     with open("README.md", "r", encoding="utf-8") as file:
         readme_text = file.read()
 
-    # Regex processing targeting custom markdown tags using raw formatted string (fr"")
+    # Regex targeting metrics data block tags
     pattern = r"()(.*?)()"
-    replacement = fr"\1\n{dashboard_template}\n\3"
+    replacement = fr"\1\n\n{dashboard_template}\n\n\3"
     
     updated_readme = re.sub(pattern, replacement, readme_text, flags=re.DOTALL)
 
