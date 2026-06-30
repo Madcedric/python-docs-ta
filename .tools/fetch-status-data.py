@@ -68,7 +68,7 @@ def render_status_graph(core, overall):
 
 def inject_into_readme(core, overall):
     """Replaces content between comment blocks inside the repository README."""
-    timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    timestamp = datetime.datetime.now(datetime.timezone.ist).strftime("%Y-%m-%d %H:%M IST")
     
     # Construct markdown table component strings
     dashboard_template = f"""
