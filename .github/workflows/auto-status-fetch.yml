@@ -27,7 +27,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Execute Visual Tracking Engine
-      run: python fetch-status-data.py
+      run: python tools/fetch-status-data.py
 
     - name: Deploy Commit Changes Directly
       run: |
