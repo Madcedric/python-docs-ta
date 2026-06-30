@@ -3,8 +3,8 @@ import datetime
 import requests
 import matplotlib.pyplot as plt
 
-# The raw JSON data feed provided directly by the translation dashboard
-DATA_URL = "https://python.org"
+# FIXME: Replace this with your actual translation JSON API endpoint (e.g., Weblate/Transifex API)
+DATA_URL = "https://python.org" 
 
 def fetch_tamil_metrics():
     """Fetches the official JSON dataset and filters out Tamil progress percentages."""
@@ -28,7 +28,7 @@ def fetch_tamil_metrics():
         
         return core_pct, overall_pct
     except Exception as e:
-        print(f"Error accessing data feed: {e}")
+        print(f"Warning: Could not fetch live data feed ({e}). Using baselines.")
         # Secure fallback matched to known baseline metrics
         return 4.68, 0.15
 
@@ -66,14 +66,13 @@ def render_status_graph(core, overall):
     plt.savefig(".tools/live_graph.png", bbox_inches='tight')
     plt.close()
 
-    def inject_into_readme(core, overall):
-        """Replaces content between comment blocks inside the repository README."""
-        # 1. Define the IST timezone offset (+5 hours, 30 minutes)
+def inject_into_readme(core, overall):
+    """Replaces content between comment blocks inside the repository README."""
+    # Define the IST timezone offset (+5 hours, 30 minutes)
     IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 
-    # 2. Fetch the current time explicitly localized to IST
+    # Fetch the current time explicitly localized to IST and UTC
     timestamp = datetime.datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
-
     timestamp_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     
     # Construct markdown table component strings
@@ -95,9 +94,9 @@ def render_status_graph(core, overall):
     with open("README.md", "r", encoding="utf-8") as file:
         readme_text = file.read()
 
-    # Regex processing targeting custom markdown tags
-    pattern = r"(<!-- START_METRICS_DATA -->)(.*?)(<!-- END_METRICS_DATA -->)"
-    replacement = f"\\1\n{dashboard_template}\n\\3"
+    # Regex processing targeting custom markdown tags using raw formatted string (fr"")
+    pattern = r"()(.*?)()"
+    replacement = fr"\1\n{dashboard_template}\n\3"
     
     updated_readme = re.sub(pattern, replacement, readme_text, flags=re.DOTALL)
 
@@ -105,7 +104,7 @@ def render_status_graph(core, overall):
         file.write(updated_readme)
 
 if __name__ == "__main__":
-    print("Connecting to python.org translation endpoints...")
+    print("Connecting to translation endpoints...")
     core_progress, overall_progress = fetch_tamil_metrics()
     
     print(f"Extracted Metrics -> Core: {core_progress}%, Overall: {overall_progress}%")
