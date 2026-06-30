@@ -14,8 +14,8 @@
 | **Overall Documentation** | `0.15%` |
 
 * 🔄 **Dashboard Synchronization Loop:** Automated via GitHub Actions
-* 📅 **Data Verification Timestamp:** `2026-06-30 08:19 UTC`
+* 📅 **Data Verification Timestamp:** `2026-06-30 08:29 UTC`
 
-![Tamil Documentation Progress Visual](1-tools/live_graph.png)
+![Tamil Documentation Progress Visual](.tools/live_graph.png)
 
 <!-- END_METRICS_DATA -->
