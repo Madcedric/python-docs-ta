@@ -66,15 +66,15 @@ def render_status_graph(core, overall):
     plt.savefig(".tools/live_graph.png", bbox_inches='tight')
     plt.close()
 
-def inject_into_readme(core, overall):
-    """Replaces content between comment blocks inside the repository README."""
-    # 1. Define the IST timezone offset (+5 hours, 30 minutes)
-IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+    def inject_into_readme(core, overall):
+        """Replaces content between comment blocks inside the repository README."""
+        # 1. Define the IST timezone offset (+5 hours, 30 minutes)
+    IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 
-# 2. Fetch the current time explicitly localized to IST
-timestamp = datetime.datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
+    # 2. Fetch the current time explicitly localized to IST
+    timestamp = datetime.datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
 
-timestamp_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    timestamp_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     
     # Construct markdown table component strings
     dashboard_template = f"""
