@@ -4,7 +4,6 @@
 - You Can join our [Discord](https://discord.gg/JNWjefK2yG) server for collaborating with us and contributing! 
 
 
-<!-- START_METRICS_DATA -->
+<!-- START_TRANSLATION_METRICS -->
 
-
-<!-- END_METRICS_DATA -->
+<!-- END_TRANSLATION_METRICS -->
