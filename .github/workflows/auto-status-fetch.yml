@@ -1,45 +1,44 @@
-name: Scheduled Data Fetch
+name: Continuous Dashboard Update
 
 on:
   schedule:
-    # This crontab schedules the action to run every day at midnight UTC
+    # Triggers every single day at 00:00 UTC completely automatically
     - cron: '0 0 * * *'
-  workflow_dispatch: # Allows you to manually trigger the script from the Actions tab
+  workflow_dispatch: # Maintains manual click-to-run button in the Actions panel
 
 jobs:
-  fetch-and-commit:
+  build-and-sync:
     runs-on: ubuntu-latest
     
-    # Critical: Grant permission to the Action runner to write changes to your repo
+    # Grants write access back to the workspace tree branch
     permissions:
       contents: write
 
     steps:
-    # 1. Checkout the repository code
-    - name: Checkout repository
+    - name: Access Repository Workspace
       uses: actions/checkout@v4
 
-    # 2. Install Python environment
-    - name: Set up Python
+    - name: Initialize Environment Runtime
       uses: actions/setup-python@v5
       with:
-        python-node-version: '3.10'
+        python-version: '3.10'
+        cache: 'pip' # Speeds up executions over time
 
-    # 3. Install required libraries
-    - name: Install dependencies
+    - name: Provisions Dependency Libraries
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # 4. Execute your fetching script
-    - name: Run data fetch script
-      run: python fetch_data.py
+    - name: Fire Python Automation Script
+      run: python fetch-status-data.py
 
-    # 5. Commit and push the modified data.json back to the repository
-    - name: Commit and push changes
+    - name: Deploy Synchronized Core Updates
       run: |
         git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add data.json
-        # Only commit if data.json actually changed to prevent empty commits
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Automated data update" && git push)
+        git config --global user.email "github-actions[bot]@://github.com"
+        
+        # Track both target files for updates
+        git add README.md live_graph.png
+        
+        # Deploy and save modifications only if fresh data creates actual differences
+        git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-sync platform data visuals" && git push)
