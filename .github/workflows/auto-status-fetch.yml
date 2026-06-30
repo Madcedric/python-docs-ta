@@ -24,15 +24,15 @@ jobs:
     - name: Fetch Pipeline Libraries
       run: |
         python -m pip install --upgrade pip
-        pip install -r 1-tools/requirements.txt
+        pip install -r .tools/requirements.txt
 
     - name: Execute Visual Tracking Engine
-      run: python 1-tools/fetch-status-data.py
+      run: python .tools/fetch-status-data.py
 
     - name: Deploy Commit Changes Directly
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
-        git add README.md 1-tools/live_graph.png
+        git add README.md .tools/live_graph.png
         git diff --quiet && git diff --staged --quiet || (git commit -m "chart: automated update for Python Tamil translation metrics" && git push)
