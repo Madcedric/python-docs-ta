@@ -95,8 +95,22 @@ def inject_into_readme(core, overall):
         readme_text = file.read()
 
     # Regex targeting metrics data block tags
-    pattern = r"()(.*?)()"
-    replacement = fr"\1\n\n{dashboard_template}\n\n\3"
+    pattern = (
+    r"(<!-- START_TRANSLATION_METRICS -->)"
+    r".*?"
+    r"(<!-- END_TRANSLATION_METRICS -->)"
+    )
+
+    replacement = (
+        rf"\1\n\n{dashboard_template}\n\n\2"
+    )
+
+    updated_readme = re.sub(
+        pattern,
+        replacement,
+        readme_text,
+        flags=re.DOTALL,
+    )
     
     updated_readme = re.sub(pattern, replacement, readme_text, flags=re.DOTALL)
 
