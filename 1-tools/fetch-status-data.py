@@ -63,7 +63,7 @@ def render_status_graph(core, overall):
     ax.tick_params(axis='both', colors='#57606a', labelsize=9)
     
     plt.tight_layout()
-    plt.savefig("tools/live_graph.png", bbox_inches='tight')
+    plt.savefig("1-tools/live_graph.png", bbox_inches='tight')
     plt.close()
 
 def inject_into_readme(core, overall):
@@ -82,7 +82,7 @@ def inject_into_readme(core, overall):
 * 🔄 **Dashboard Synchronization Loop:** Automated via GitHub Actions
 * 📅 **Data Verification Timestamp:** `{timestamp}`
 
-![Tamil Documentation Progress Visual](tools/live_graph.png)
+![Tamil Documentation Progress Visual](1-tools/live_graph.png)
 """
 
     with open("README.md", "r", encoding="utf-8") as file:
