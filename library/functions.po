@@ -74,7 +74,7 @@ msgid "|func-bytes|_"
 msgstr "|func-bytes|_"
 
 msgid "**C**"
-msgstr ""
+msgstr "C"
 
 msgid ":func:`callable`"
 msgstr ":func:`callable`"
@@ -131,7 +131,7 @@ msgid ":func:`format`"
 msgstr ":func:`format`"
 
 msgid "|func-frozendict|_"
-msgstr ""
+msgstr "|func-frozendict|_"
 
 msgid "|func-frozenset|_"
 msgstr "|func-frozenset|_"
@@ -459,7 +459,7 @@ msgstr ""
 "பார்க்கவும்) ஆகும்."
 
 msgid "The parameter is now positional-only."
-msgstr ""
+msgstr "அந்த அளவுரு இப்போது நிலை-சார்ந்தது (positional-only) மட்டுமே."
 
 msgid ""
 "This function drops you into the debugger at the call site.  Specifically, "
