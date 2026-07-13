@@ -40,7 +40,7 @@ msgid "Using Python for macOS from ``python.org``"
 msgstr ""
 
 msgid "Installation steps"
-msgstr ""
+msgstr "Install செய்வதற்கான முறைகள் "
 
 msgid ""
 "For `current Python versions <https://www.python.org/downloads/>`_ (other "
