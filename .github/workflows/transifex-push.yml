@@ -3,8 +3,11 @@ name: Push Translations to Transifex
 on:
   push:
     branches:
-      - '3.15'          # Triggers when updates are made to the translation files
-  workflow_dispatch:   # Allows manual trigger
+      - '3.15'          # Triggers automatically when updates are made to this branch
+  workflow_dispatch:   # Allows you to trigger it manually from the GitHub Actions tab
+
+permissions:
+  contents: read
 
 jobs: 
   push-translations:
@@ -22,7 +25,7 @@ jobs:
         with:
           python-version: 3
 
-      # Install the dependencies and the Transifex CLI binary exactly like the pull script
+      # Install the dependencies and the Transifex CLI binary exactly like your pull script
       - name: Install Dependencies
         run: |
           sudo apt-get install -y gettext
@@ -43,9 +46,14 @@ jobs:
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
+      # Prints out the configuration file contents in the logs to visually confirm file mappings
+      - name: Debug Transifex Config Paths
+        run: cat .tx/config
+
       # Push your local .po translation files directly up to Transifex
+      # --force overrides the upload cache; --no-interactive prevents hanging prompts
       - name: Push translations to Transifex
         run: |
-          tx push -t -l ta
+          tx push -t -l ta --force --no-interactive
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
