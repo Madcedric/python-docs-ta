@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Using Python on macOS"
-msgstr ""
+msgstr "macOS ல் Python ஐ பயன்படுத்துதல்"
 
 msgid ""
 "This document aims to give an overview of macOS-specific behavior you should "
