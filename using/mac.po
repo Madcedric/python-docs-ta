@@ -37,7 +37,7 @@ msgid ""
 msgstr ""
 
 msgid "Using Python for macOS from ``python.org``"
-msgstr ""
+msgstr "``python.org`` ல் இருந்து ல் python ஐ பயன்படுத்துதல்"
 
 msgid "Installation steps"
 msgstr "Install செய்வதற்கான முறைகள் "
