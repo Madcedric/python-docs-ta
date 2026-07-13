@@ -1,13 +1,13 @@
-name: Push Source Strings to Transifex
+name: Push Translations to Transifex
 
 on:
   push:
     branches:
-      - '3.15'    # Triggers automatically when code is pushed to this branch
-  workflow_dispatch: # Allows you to trigger it manually from the GitHub Actions tab
+      - '3.15'          # Triggers when updates are made to the translation files
+  workflow_dispatch:   # Allows manual trigger
 
 jobs: 
-  push-source:
+  push-translations:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -22,6 +22,7 @@ jobs:
         with:
           python-version: 3
 
+      # Install the dependencies and the Transifex CLI binary exactly like the pull script
       - name: Install Dependencies
         run: |
           sudo apt-get install -y gettext
@@ -34,22 +35,17 @@ jobs:
           ref: ${{ matrix.version }}
           fetch-depth: 0
 
-      # Fetch the exact same helper utility used in your Pull script
-      - run: curl -O https://raw.githubusercontent.com/python-docs-translations/transifex-automations/master/sample-workflows/transifex-util.py
-      - run: chmod +x transifex-util.py
-
-      # Dynamically recreate the .tx/config for the push mapping
-      - run: ./transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version ${{ matrix.version }}
+      # Generate the mapping using your local transifex-util.py script
+      - name: Generate Transifex Configuration
+        run: |
+          chmod +x transifex-util.py
+          ./transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version ${{ matrix.version }}
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
-      # Build the newest pot templates/source strings before pushing 
-      # Note: If your environment builds pots via a specific Makefile target, you can swap this line.
-      - name: Build pot templates
-        run: sphinx-build -b gettext . pot/
-
-      # Push the updated source files up to the Transifex project
-      - name: Push to Transifex
-        run: ./transifex-util.py push --project-slug python-newest --version ${{ matrix.version }}
+      # Push your local .po translation files directly up to Transifex
+      - name: Push translations to Transifex
+        run: |
+          tx push -t -l ta
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
