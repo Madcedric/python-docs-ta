@@ -51,9 +51,8 @@ jobs:
         run: cat .tx/config
 
       # Push your local .po translation files directly up to Transifex
-      # --force overrides the upload cache; --no-interactive prevents hanging prompts
       - name: Push translations to Transifex
         run: |
-          tx push -t -l ta --force --no-interactive
+          tx push -t -l ta --use-git-timestamps
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
