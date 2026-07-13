@@ -35,11 +35,11 @@ jobs:
           ref: ${{ matrix.version }}
           fetch-depth: 0
 
-      # Generate the mapping using your local transifex-util.py script
+      # Generate the mapping using the script located inside .github/workflows/
       - name: Generate Transifex Configuration
         run: |
-          chmod +x transifex-util.py
-          ./transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version ${{ matrix.version }}
+          chmod +x .github/workflows/transifex-util.py
+          python3 .github/workflows/transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version ${{ matrix.version }}
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
