@@ -1,0 +1,55 @@
+name: Push Source Strings to Transifex
+
+on:
+  push:
+    branches:
+      - '3.15'    # Triggers automatically when code is pushed to this branch
+  workflow_dispatch: # Allows you to trigger it manually from the GitHub Actions tab
+
+jobs: 
+  push-source:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '3.15' ]
+    steps:
+      - uses: styfle/cancel-workflow-action@main
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@master
+        with:
+          python-version: 3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install -y gettext
+          pip install requests cogapp polib transifex-python sphinx-intl blurb six
+          curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
+        working-directory: /usr/local/bin
+
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ matrix.version }}
+          fetch-depth: 0
+
+      # Fetch the exact same helper utility used in your Pull script
+      - run: curl -O https://raw.githubusercontent.com/python-docs-translations/transifex-automations/master/sample-workflows/transifex-util.py
+      - run: chmod +x transifex-util.py
+
+      # Dynamically recreate the .tx/config for the push mapping
+      - run: ./transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version ${{ matrix.version }}
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
+
+      # Build the newest pot templates/source strings before pushing 
+      # Note: If your environment builds pots via a specific Makefile target, you can swap this line.
+      - name: Build pot templates
+        run: sphinx-build -b gettext . pot/
+
+      # Push the updated source files up to the Transifex project
+      - name: Push to Transifex
+        run: ./transifex-util.py push --project-slug python-newest --version ${{ matrix.version }}
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
