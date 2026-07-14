@@ -3,65 +3,340 @@ name: Push Translations to Transifex
 on:
   push:
     branches:
-      - '3.15' # Triggers automatically when updates are made to this branch
+      - '3.15'
     paths:
       - '**/*.po'
-    
-  workflow_dispatch:   # Allows you to trigger it manually from the GitHub Actions tab
+
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-jobs: 
+jobs:
   push-translations:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
-        version: [ '3.15' ]
+        version:
+          - '3.15'
+
     steps:
-      - uses: styfle/cancel-workflow-action@main
+      # ------------------------------------------------------------
+      # 1. Cancel older runs of the same workflow
+      # ------------------------------------------------------------
+      - name: Cancel previous workflow runs
+        uses: styfle/cancel-workflow-action@main
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-python@master
-        with:
-          python-version: 3
-
-      # Install the dependencies and the Transifex CLI binary exactly like your pull script
-      - name: Install Dependencies
-        run: |
-          sudo apt-get install -y gettext
-          pip install requests cogapp polib transifex-python sphinx-intl blurb six
-          curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
-        working-directory: /usr/local/bin
-
-      - uses: actions/checkout@master
+      # ------------------------------------------------------------
+      # 2. Check out the translation repository
+      # ------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@master
         with:
           ref: ${{ matrix.version }}
           fetch-depth: 0
 
-      # Generate the mapping using the script located inside .github/workflows/
-      - name: Generate Transifex Configuration
+      # ------------------------------------------------------------
+      # 3. Set up Python
+      # ------------------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@master
+        with:
+          python-version: '3'
+
+      # ------------------------------------------------------------
+      # 4. Install gettext, Python dependencies and Transifex CLI
+      # ------------------------------------------------------------
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
+          python -m pip install --upgrade pip
+
+          pip install \
+            requests \
+            cogapp \
+            polib \
+            transifex-python \
+            sphinx-intl \
+            blurb \
+            six
+
+          curl -o- \
+            https://raw.githubusercontent.com/transifex/cli/master/install.sh \
+            | bash
+
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # ------------------------------------------------------------
+      # 5. Verify required tools
+      # ------------------------------------------------------------
+      - name: Verify installed tools
+        run: |
+          echo "=== Python ==="
+          python --version
+
+          echo "=== gettext ==="
+          msgcat --version | head -n 1
+
+          echo "=== Transifex CLI ==="
+          tx --version
+
+      # ------------------------------------------------------------
+      # 6. Generate the official-style Transifex configuration
+      #
+      # IMPORTANT:
+      # transifex-util.py must preserve the generated <lang> path.
+      # Do not strip locales/<lang>/LC_MESSAGES from .tx/config.
+      # ------------------------------------------------------------
+      - name: Generate Transifex configuration
         run: |
           chmod +x .github/workflows/transifex-util.py
-          python3 .github/workflows/transifex-util.py recreate_tx_config --language ta --project-slug python-newest --version ${{ matrix.version }}
+
+          python3 .github/workflows/transifex-util.py \
+            recreate_tx_config \
+            --language ta \
+            --project-slug python-newest \
+            --version "${{ matrix.version }}"
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
-      # Strips the deep CPython locale prefixes so Transifex CLI looks directly at your root directories
-      - name: Align Configuration Paths to Repository Layout
+      # ------------------------------------------------------------
+      # 7. Validate that .tx/config was generated
+      # ------------------------------------------------------------
+      - name: Validate Transifex configuration
         run: |
-          sed -i 's|locales/ta/LC_MESSAGES/||g' .tx/config || true
+          if [ ! -f ".tx/config" ]; then
+            echo "ERROR: .tx/config was not generated."
+            exit 1
+          fi
 
-      # Prints out the configuration file contents in the logs to visually confirm file mappings
-      - name: Debug Transifex Config Paths
-        run: cat .tx/config
+          if [ ! -s ".tx/config" ]; then
+            echo "ERROR: .tx/config is empty."
+            exit 1
+          fi
 
-      # Push your local .po translation files directly up to Transifex
-      - name: Push translations to Transifex
+          echo "Transifex configuration generated successfully."
+
+          RESOURCE_COUNT=$(grep -c '^\[' .tx/config || true)
+
+          echo "Configuration section count: $RESOURCE_COUNT"
+
+          if [ "$RESOURCE_COUNT" -le 1 ]; then
+            echo "ERROR: No Transifex resource mappings were generated."
+            exit 1
+          fi
+
+      # ------------------------------------------------------------
+      # 8. Debug generated file filters
+      #
+      # This proves whether <lang> is preserved.
+      # ------------------------------------------------------------
+      - name: Show generated Transifex paths
         run: |
-          tx push -t -l ta --force
+          echo "=== FILE FILTERS ==="
+
+          grep '^file_filter' .tx/config | head -n 30 || true
+
+          echo
+          echo "=== SOURCE FILES ==="
+
+          grep '^source_file' .tx/config | head -n 30 || true
+
+          echo
+          echo "=== LANGUAGE PLACEHOLDER CHECK ==="
+
+          if ! grep -q '<lang>' .tx/config; then
+            echo "ERROR: No <lang> placeholder exists in .tx/config."
+            echo "Translation language discovery may be broken."
+            exit 1
+          fi
+
+          echo "<lang> placeholder found successfully."
+
+      # ------------------------------------------------------------
+      # 9. Count original Tamil translation files
+      # ------------------------------------------------------------
+      - name: Validate repository translation files
+        run: |
+          echo "=== ORIGINAL TAMIL PO FILES ==="
+
+          ORIGINAL_FILE_COUNT=$(
+            find . \
+              -type f \
+              -name "*.po" \
+              ! -path "./locales/*" \
+              ! -path "./.git/*" \
+              | wc -l
+          )
+
+          echo "Original Tamil PO file count: $ORIGINAL_FILE_COUNT"
+
+          if [ "$ORIGINAL_FILE_COUNT" -eq 0 ]; then
+            echo "ERROR: No Tamil .po files exist in the repository."
+            exit 1
+          fi
+
+      # ------------------------------------------------------------
+      # 10. Build temporary CPython-style Tamil locale tree
+      #
+      # Example:
+      #
+      # library/functions.po
+      #
+      # becomes:
+      #
+      # locales/ta/LC_MESSAGES/library/functions.po
+      #
+      # This directory exists only on the GitHub Actions runner.
+      # ------------------------------------------------------------
+      - name: Prepare Tamil translations for Transifex
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Creating temporary Tamil locale structure..."
+
+          mkdir -p locales/ta/LC_MESSAGES
+
+          MAPPED_COUNT=0
+
+          while IFS= read -r -d '' file; do
+            relative_path="${file#./}"
+
+            target="locales/ta/LC_MESSAGES/${relative_path}"
+
+            mkdir -p "$(dirname "$target")"
+
+            cp "$file" "$target"
+
+            echo "Mapped: $relative_path -> $target"
+
+            MAPPED_COUNT=$((MAPPED_COUNT + 1))
+          done < <(
+            find . \
+              -type f \
+              -name "*.po" \
+              ! -path "./locales/*" \
+              ! -path "./.git/*" \
+              -print0
+          )
+
+          echo
+          echo "Total mapped Tamil files: $MAPPED_COUNT"
+
+          if [ "$MAPPED_COUNT" -eq 0 ]; then
+            echo "ERROR: No Tamil translation files were mapped."
+            exit 1
+          fi
+
+      # ------------------------------------------------------------
+      # 11. Validate the temporary locale structure
+      # ------------------------------------------------------------
+      - name: Validate Tamil locale mapping
+        run: |
+          echo "=== PREPARED TAMIL TRANSLATION FILES ==="
+
+          MAPPED_FILE_COUNT=$(
+            find locales/ta/LC_MESSAGES \
+              -type f \
+              -name "*.po" \
+              | wc -l
+          )
+
+          echo "Mapped Tamil PO file count: $MAPPED_FILE_COUNT"
+
+          if [ "$MAPPED_FILE_COUNT" -eq 0 ]; then
+            echo "ERROR: locales/ta/LC_MESSAGES contains no PO files."
+            exit 1
+          fi
+
+          echo
+          echo "=== SAMPLE MAPPED FILES ==="
+
+          find locales/ta/LC_MESSAGES \
+            -type f \
+            -name "*.po" \
+            | head -n 30
+
+      # ------------------------------------------------------------
+      # 12. Verify that generated file_filter paths resolve for Tamil
+      #
+      # file_filter:
+      # locales/<lang>/LC_MESSAGES/library/functions.po
+      #
+      # becomes:
+      # locales/ta/LC_MESSAGES/library/functions.po
+      # ------------------------------------------------------------
+      - name: Verify Transifex file mappings
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=== VERIFYING TRANSIFEX FILE MAPPINGS ==="
+
+          CHECKED=0
+          FOUND=0
+          MISSING=0
+
+          while IFS= read -r filter; do
+            filter="${filter#*=}"
+            filter="$(echo "$filter" | xargs)"
+
+            tamil_path="${filter//<lang>/ta}"
+
+            CHECKED=$((CHECKED + 1))
+
+            if [ -f "$tamil_path" ]; then
+              FOUND=$((FOUND + 1))
+            else
+              MISSING=$((MISSING + 1))
+              echo "Missing local translation: $tamil_path"
+            fi
+          done < <(grep '^file_filter' .tx/config)
+
+          echo
+          echo "Mappings checked: $CHECKED"
+          echo "Tamil files found: $FOUND"
+          echo "Tamil files missing: $MISSING"
+
+          if [ "$CHECKED" -eq 0 ]; then
+            echo "ERROR: No file_filter entries found in .tx/config."
+            exit 1
+          fi
+
+          if [ "$FOUND" -eq 0 ]; then
+            echo "ERROR: No Transifex file_filter matched a Tamil PO file."
+            exit 1
+          fi
+
+          echo
+          echo "Transifex Tamil file mappings are valid."
+
+      # ------------------------------------------------------------
+      # 13. Push Tamil translations
+      #
+      # The command must fail the workflow if Transifex CLI fails.
+      # Never append `|| true` here.
+      # ------------------------------------------------------------
+      - name: Push Tamil translations to Transifex
+        run: |
+          set -euo pipefail
+
+          echo "Starting Tamil translation push..."
+
+          tx push \
+            -t \
+            -l ta \
+            --force
+
+          echo "Transifex push command completed successfully."
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
