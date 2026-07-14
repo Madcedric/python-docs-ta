@@ -3,7 +3,10 @@ name: Push Translations to Transifex
 on:
   push:
     branches:
-      - '3.15'          # Triggers automatically when updates are made to this branch
+      - '3.15' # Triggers automatically when updates are made to this branch
+    paths:
+      - '**/*.po'
+    
   workflow_dispatch:   # Allows you to trigger it manually from the GitHub Actions tab
 
 permissions:
