@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Using Python on Windows"
-msgstr "Python ஐ Windows ல் பயன்படுத்துதல்"
+msgstr "Python -ஐ Windows -ல் பயன்படுத்துதல்"
 
 msgid ""
 "This document aims to give an overview of Windows-specific behaviour you "
