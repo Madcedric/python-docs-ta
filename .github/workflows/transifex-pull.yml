@@ -77,7 +77,7 @@ jobs:
       - run: git add . ':!transifex-util.py'
       
       # 3. Safely commit only if there are valid changes remaining
-      - run: git commit -m 'Update translation from Transifex' || echo "No changes to commit"
+      - run: git commit -m 'Update translation from Transifex [skip ci]' || echo "No changes to commit"
         if: ${{ env.SIGNIFICANT_CHANGES == '1' }}
 
       # 4. Push the safe updates back up to GitHub
