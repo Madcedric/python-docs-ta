@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Building C and C++ Extensions"
-msgstr ""
+msgstr "C மற்றும் C++ Extension களை உருவாக்குதல்"
 
 msgid ""
 "A C extension for CPython is a shared library (for example, a ``.so`` file "
