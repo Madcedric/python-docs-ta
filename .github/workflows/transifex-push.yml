@@ -3,8 +3,8 @@ name: Push Translations to Transifex
 on:
   push:
     branches:
-      - '3.15'
-  workflow_dispatch:
+      - '3.15'          # Triggers automatically when updates are made to this branch
+  workflow_dispatch:   # Allows you to trigger it manually from the GitHub Actions tab
 
 permissions:
   contents: read
@@ -25,6 +25,7 @@ jobs:
         with:
           python-version: 3
 
+      # Install dependencies and the Transifex CLI binary
       - name: Install Dependencies
         run: |
           sudo apt-get install -y gettext
@@ -37,7 +38,7 @@ jobs:
           ref: ${{ matrix.version }}
           fetch-depth: 0
 
-      # 1. Generate the mapping using the script located inside .github/workflows/
+      # Generate the mapping using the script located inside .github/workflows/
       - name: Generate Transifex Configuration
         run: |
           chmod +x .github/workflows/transifex-util.py
@@ -45,13 +46,14 @@ jobs:
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
-      # 2. View configuration file mapping context
+      # Prints out the configuration file contents in the logs to visually confirm file mappings
       - name: Debug Transifex Config Paths
         run: cat .tx/config
 
-      # 3. THIS STEP WAS MISSING FROM YOUR RUN: Push the target translations
+      # Push your local .po translation files directly up to Transifex
+      # Using --force to blast through the "Done/Skipped" timestamp cache
       - name: Push translations to Transifex
         run: |
-          tx push -t -l ta --use-git-timestamps
+          tx push -t -l ta --force
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
