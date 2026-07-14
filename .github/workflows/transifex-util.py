@@ -49,7 +49,22 @@ def recreate_tx_config():
                 _update_txconfig_resources()
                 with open(".tx/config", "r") as file:
                     contents = file.read()
-        contents = contents.replace("./<lang>/LC_MESSAGES/", "")
+        
+        # --- FIXED PATH REALIGNMENT BLOCK ---
+        # Dynamically strip out nested locale paths so mappings point directly to root directories
+        replacements = [
+            f"locales/{LANGUAGE}/LC_MESSAGES/",
+            f"locales/<lang>/LC_MESSAGES/",
+            f"./locales/{LANGUAGE}/LC_MESSAGES/",
+            f"./locales/<lang>/LC_MESSAGES/",
+            "./<lang>/LC_MESSAGES/",
+            "<lang>/LC_MESSAGES/",
+            f"locales/{LANGUAGE}/",
+            f"locales/<lang>/",
+        ]
+        for rep in replacements:
+            contents = contents.replace(rep, "")
+        # ------------------------------------
 
         os.makedirs(".tx", exist_ok=True)
         with open(".tx/config", "w") as file:

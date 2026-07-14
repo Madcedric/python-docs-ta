@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Editors and IDEs"
-msgstr ""
+msgstr "Editor -கள் மற்றும் IDE -கள்"
 
 msgid ""
 "There are a number of IDEs that support Python programming language. Many "
