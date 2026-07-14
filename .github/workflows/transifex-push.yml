@@ -289,7 +289,7 @@ jobs:
             exit 1
           fi
 
-      # ------------------------------------------------------------
+            # ------------------------------------------------------------
       # 12. Validate temporary Tamil locale structure
       # ------------------------------------------------------------
       - name: Validate Tamil locale mapping
@@ -314,11 +314,19 @@ jobs:
           echo
           echo "=== SAMPLE MAPPED FILES ==="
 
-          find locales/ta/LC_MESSAGES \
-            -type f \
-            -name "*.po" \
-            | head -n 30
+          mapfile -d '' SAMPLE_FILES < <(
+            find locales/ta/LC_MESSAGES \
+              -type f \
+              -name "*.po" \
+              -print0
+          )
 
+          printf '%s\n' "${SAMPLE_FILES[@]:0:30}"
+
+          echo
+          echo "Tamil locale mapping validation completed successfully."
+
+          
       # ------------------------------------------------------------
       # 13. Verify Transifex file_filter mappings
       # ------------------------------------------------------------
