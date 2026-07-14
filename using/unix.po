@@ -24,7 +24,7 @@ msgid "Getting and installing the latest version of Python"
 msgstr ""
 
 msgid "On Linux"
-msgstr ""
+msgstr "Linux -ல்"
 
 msgid ""
 "Python comes preinstalled on most Linux distributions, and is available as a "
