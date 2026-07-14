@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: 3
 
-      # Install dependencies and the Transifex CLI binary
+      # Install the dependencies and the Transifex CLI binary exactly like your pull script
       - name: Install Dependencies
         run: |
           sudo apt-get install -y gettext
@@ -46,12 +46,16 @@ jobs:
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
+      # Strips the deep CPython locale prefixes so Transifex CLI looks directly at your root directories
+      - name: Align Configuration Paths to Repository Layout
+        run: |
+          sed -i 's|locales/ta/LC_MESSAGES/||g' .tx/config || true
+
       # Prints out the configuration file contents in the logs to visually confirm file mappings
       - name: Debug Transifex Config Paths
         run: cat .tx/config
 
       # Push your local .po translation files directly up to Transifex
-      # Using --force to blast through the "Done/Skipped" timestamp cache
       - name: Push translations to Transifex
         run: |
           tx push -t -l ta --force
