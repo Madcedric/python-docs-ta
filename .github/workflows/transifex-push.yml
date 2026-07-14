@@ -239,15 +239,15 @@ jobs:
           fi
 
       # ------------------------------------------------------------
-      # 11. Create temporary CPython-style Tamil locale tree
+      # 11. Create temporary Transifex-compatible Tamil locale tree
       #
-      # Example:
+      # Generated .tx/config expects:
       #
-      # library/functions.po
+      # ./<lang>/LC_MESSAGES/<resource>.po
       #
-      # ->
+      # Therefore Tamil files must temporarily exist under:
       #
-      # locales/ta/LC_MESSAGES/library/functions.po
+      # ./ta/LC_MESSAGES/<resource>.po
       # ------------------------------------------------------------
       - name: Prepare Tamil translations for Transifex
         shell: bash
@@ -256,14 +256,14 @@ jobs:
 
           echo "Creating temporary Tamil locale structure..."
 
-          mkdir -p locales/ta/LC_MESSAGES
+          mkdir -p ta/LC_MESSAGES
 
           MAPPED_COUNT=0
 
           while IFS= read -r -d '' file; do
             relative_path="${file#./}"
 
-            target="locales/ta/LC_MESSAGES/${relative_path}"
+            target="ta/LC_MESSAGES/${relative_path}"
 
             mkdir -p "$(dirname "$target")"
 
@@ -276,7 +276,7 @@ jobs:
             find . \
               -type f \
               -name "*.po" \
-              ! -path "./locales/*" \
+              ! -path "./ta/*" \
               ! -path "./.git/*" \
               -print0
           )
@@ -288,8 +288,8 @@ jobs:
             echo "ERROR: No Tamil translation files were mapped."
             exit 1
           fi
-
-            # ------------------------------------------------------------
+          
+      # ------------------------------------------------------------
       # 12. Validate temporary Tamil locale structure
       # ------------------------------------------------------------
       - name: Validate Tamil locale mapping
@@ -298,7 +298,7 @@ jobs:
           set -euo pipefail
 
           MAPPED_FILE_COUNT=$(
-            find locales/ta/LC_MESSAGES \
+            find ta/LC_MESSAGES \
               -type f \
               -name "*.po" \
               | wc -l
@@ -307,7 +307,7 @@ jobs:
           echo "Mapped Tamil PO file count: $MAPPED_FILE_COUNT"
 
           if [ "$MAPPED_FILE_COUNT" -eq 0 ]; then
-            echo "ERROR: locales/ta/LC_MESSAGES contains no PO files."
+            echo "ERROR: ta/LC_MESSAGES contains no PO files."
             exit 1
           fi
 
@@ -315,7 +315,7 @@ jobs:
           echo "=== SAMPLE MAPPED FILES ==="
 
           mapfile -d '' SAMPLE_FILES < <(
-            find locales/ta/LC_MESSAGES \
+            find ta/LC_MESSAGES \
               -type f \
               -name "*.po" \
               -print0
