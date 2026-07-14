@@ -26,7 +26,7 @@ jobs:
 
     steps:
       # ------------------------------------------------------------
-      # 1. Cancel older runs of the same workflow
+      # 1. Cancel older workflow runs
       # ------------------------------------------------------------
       - name: Cancel previous workflow runs
         uses: styfle/cancel-workflow-action@main
@@ -51,16 +51,18 @@ jobs:
           python-version: '3'
 
       # ------------------------------------------------------------
-      # 4. Install gettext, Python dependencies and Transifex CLI
+      # 4. Install system and Python dependencies
       # ------------------------------------------------------------
       - name: Install dependencies
         run: |
+          set -euo pipefail
+
           sudo apt-get update
           sudo apt-get install -y gettext
 
           python -m pip install --upgrade pip
 
-          pip install \
+          python -m pip install \
             requests \
             cogapp \
             polib \
@@ -69,35 +71,83 @@ jobs:
             blurb \
             six
 
+      # ------------------------------------------------------------
+      # 5. Install Transifex CLI
+      #
+      # The official installer extracts tx into the current directory.
+      # Explicitly move the binary into /usr/local/bin so later
+      # GitHub Actions steps can find it.
+      # ------------------------------------------------------------
+      - name: Install Transifex CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          INSTALL_DIR="$(mktemp -d)"
+
+          echo "Temporary Transifex install directory: $INSTALL_DIR"
+
+          cd "$INSTALL_DIR"
+
           curl -o- \
             https://raw.githubusercontent.com/transifex/cli/master/install.sh \
             | bash
 
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo
+          echo "=== INSTALL DIRECTORY CONTENTS ==="
+          ls -la
+
+          if [ ! -f "./tx" ]; then
+            echo "ERROR: Transifex installer did not create the tx binary."
+            exit 1
+          fi
+
+          chmod +x ./tx
+
+          sudo install \
+            -m 0755 \
+            ./tx \
+            /usr/local/bin/tx
+
+          echo
+          echo "Transifex CLI installed at:"
+          command -v tx
 
       # ------------------------------------------------------------
-      # 5. Verify required tools
+      # 6. Verify required tools
       # ------------------------------------------------------------
       - name: Verify installed tools
         run: |
+          set -euo pipefail
+
           echo "=== Python ==="
           python --version
 
+          echo
           echo "=== gettext ==="
           msgcat --version | head -n 1
 
-          echo "=== Transifex CLI ==="
+          echo
+          echo "=== Transifex CLI path ==="
+          command -v tx
+
+          echo
+          echo "=== Transifex CLI version ==="
           tx --version
 
       # ------------------------------------------------------------
-      # 6. Generate the official-style Transifex configuration
+      # 7. Generate Transifex configuration
       #
-      # IMPORTANT:
-      # transifex-util.py must preserve the generated <lang> path.
-      # Do not strip locales/<lang>/LC_MESSAGES from .tx/config.
+      # transifex-util.py must preserve:
+      #
+      # locales/<lang>/LC_MESSAGES/
+      #
+      # Do not strip the <lang> placeholder.
       # ------------------------------------------------------------
       - name: Generate Transifex configuration
         run: |
+          set -euo pipefail
+
           chmod +x .github/workflows/transifex-util.py
 
           python3 .github/workflows/transifex-util.py \
@@ -109,10 +159,12 @@ jobs:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
 
       # ------------------------------------------------------------
-      # 7. Validate that .tx/config was generated
+      # 8. Validate generated .tx/config
       # ------------------------------------------------------------
       - name: Validate Transifex configuration
         run: |
+          set -euo pipefail
+
           if [ ! -f ".tx/config" ]; then
             echo "ERROR: .tx/config was not generated."
             exit 1
@@ -123,8 +175,6 @@ jobs:
             exit 1
           fi
 
-          echo "Transifex configuration generated successfully."
-
           RESOURCE_COUNT=$(grep -c '^\[' .tx/config || true)
 
           echo "Configuration section count: $RESOURCE_COUNT"
@@ -134,13 +184,15 @@ jobs:
             exit 1
           fi
 
+          echo "Transifex configuration generated successfully."
+
       # ------------------------------------------------------------
-      # 8. Debug generated file filters
-      #
-      # This proves whether <lang> is preserved.
+      # 9. Show generated paths
       # ------------------------------------------------------------
       - name: Show generated Transifex paths
         run: |
+          set -euo pipefail
+
           echo "=== FILE FILTERS ==="
 
           grep '^file_filter' .tx/config | head -n 30 || true
@@ -155,17 +207,19 @@ jobs:
 
           if ! grep -q '<lang>' .tx/config; then
             echo "ERROR: No <lang> placeholder exists in .tx/config."
-            echo "Translation language discovery may be broken."
             exit 1
           fi
 
           echo "<lang> placeholder found successfully."
 
       # ------------------------------------------------------------
-      # 9. Count original Tamil translation files
+      # 10. Validate original Tamil PO files
       # ------------------------------------------------------------
       - name: Validate repository translation files
+        shell: bash
         run: |
+          set -euo pipefail
+
           echo "=== ORIGINAL TAMIL PO FILES ==="
 
           ORIGINAL_FILE_COUNT=$(
@@ -185,17 +239,15 @@ jobs:
           fi
 
       # ------------------------------------------------------------
-      # 10. Build temporary CPython-style Tamil locale tree
+      # 11. Create temporary CPython-style Tamil locale tree
       #
       # Example:
       #
       # library/functions.po
       #
-      # becomes:
+      # ->
       #
       # locales/ta/LC_MESSAGES/library/functions.po
-      #
-      # This directory exists only on the GitHub Actions runner.
       # ------------------------------------------------------------
       - name: Prepare Tamil translations for Transifex
         shell: bash
@@ -238,11 +290,12 @@ jobs:
           fi
 
       # ------------------------------------------------------------
-      # 11. Validate the temporary locale structure
+      # 12. Validate temporary Tamil locale structure
       # ------------------------------------------------------------
       - name: Validate Tamil locale mapping
+        shell: bash
         run: |
-          echo "=== PREPARED TAMIL TRANSLATION FILES ==="
+          set -euo pipefail
 
           MAPPED_FILE_COUNT=$(
             find locales/ta/LC_MESSAGES \
@@ -267,13 +320,7 @@ jobs:
             | head -n 30
 
       # ------------------------------------------------------------
-      # 12. Verify that generated file_filter paths resolve for Tamil
-      #
-      # file_filter:
-      # locales/<lang>/LC_MESSAGES/library/functions.po
-      #
-      # becomes:
-      # locales/ta/LC_MESSAGES/library/functions.po
+      # 13. Verify Transifex file_filter mappings
       # ------------------------------------------------------------
       - name: Verify Transifex file mappings
         shell: bash
@@ -321,12 +368,10 @@ jobs:
           echo "Transifex Tamil file mappings are valid."
 
       # ------------------------------------------------------------
-      # 13. Push Tamil translations
-      #
-      # The command must fail the workflow if Transifex CLI fails.
-      # Never append `|| true` here.
+      # 14. Push Tamil translations to Transifex
       # ------------------------------------------------------------
       - name: Push Tamil translations to Transifex
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -337,6 +382,7 @@ jobs:
             -l ta \
             --force
 
+          echo
           echo "Transifex push command completed successfully."
         env:
           TX_TOKEN: ${{ secrets.TX_TOKEN }}
