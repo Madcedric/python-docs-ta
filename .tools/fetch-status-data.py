@@ -70,8 +70,7 @@ def inject_into_readme(core, overall):
     """Replaces content between comment blocks inside the repository README without stacking whitespace."""
     # Define the IST timezone offset (+5 hours, 30 minutes)
     IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
-
-    # Fetch current times
+# Fetch current times
     timestamp = datetime.datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
     timestamp_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     
@@ -83,48 +82,35 @@ def inject_into_readme(core, overall):
 | :--- | :--- |
 | **Core Documentation** | `{core:.2f}%` |
 | **Overall Documentation** | `{overall:.2f}%` |
-
 * 🔄 **Dashboard Synchronization Loop:** Automated via GitHub Actions
 * 📅 **Data Verification Timestamp IST:** `{timestamp}`
 * 📅 **Data Verification Timestamp UTC:** `{timestamp_utc}`
-
 ![Tamil Documentation Progress Visual](.tools/live_graph.png)
 """.strip()
-
     with open("README.md", "r", encoding="utf-8") as file:
         readme_text = file.read()
-
     # Regex targeting metrics data block tags
     pattern = (
     r"(<!-- START_TRANSLATION_METRICS -->)"
     r".*?"
     r"(<!-- END_TRANSLATION_METRICS -->)"
     )
-
     replacement = (
         rf"\1\n\n{dashboard_template}\n\n\2"
     )
-
     updated_readme = re.sub(
         pattern,
         replacement,
         readme_text,
         flags=re.DOTALL,
     )
-    
-    updated_readme = re.sub(pattern, replacement, readme_text, flags=re.DOTALL)
-
     with open("README.md", "w", encoding="utf-8") as file:
         file.write(updated_readme)
-
 if __name__ == "__main__":
     print("Connecting to translation endpoints...")
     core_progress, overall_progress = fetch_tamil_metrics()
-    
     print(f"Extracted Metrics -> Core: {core_progress}%, Overall: {overall_progress}%")
     render_status_graph(core_progress, overall_progress)
-    
     print("Updating tracking segments inside README.md file...")
     inject_into_readme(core_progress, overall_progress)
-    
     print("Data processing run successfully updated!")
